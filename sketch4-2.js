@@ -8,12 +8,19 @@
 // A Simple Pendulum Class
 
 // This constructor could be improved to allow a greater variety of pendulums
-let gravity = 0.4; // Arbitrary constant
+let gravity = 1; // Arbitrary constant
+let buffer;
+
+let px = -1;
+let py = -1;
+
+let parentPendulum;
+let childPendulum;
 
 
 class Pendulum {
 
-  constructor({x = 0, y = 0, r = 1, angle = PI /2, aVelocity = 0, aAcceleration = 0, damping = 0.995, ballr = 5, mass = 1} = {}) {
+  constructor({x = 0, y = 0, r = 1, angle = PI /2, aVelocity = 0, aAcceleration = 0.1, damping = 1, ballr = 15, mass = 10} = {}) {
     this.origin = createVector(x, y);
     this.position = createVector();
     this.r = r;
@@ -83,7 +90,7 @@ class PendulumSystem {
 class ParentPendulum extends PendulumSystem {
 
   constructor(x, y, r) {
-    let p = new Pendulum({x: x, y: y, r: r});
+    let p = new Pendulum({x: x, y: y, r: r, aVelocity: 0, mass: 10});
     super(p);
     this.childPendulum;
   }
@@ -103,7 +110,7 @@ class ParentPendulum extends PendulumSystem {
 class ChildPendulum extends PendulumSystem {
 
   constructor(r) {
-    let p = new Pendulum({r: r, ballr : 15, aVelocity: 0.01, mass: 2.0});
+    let p = new Pendulum({r: r, ballr : 15, aVelocity: 0.1, mass: 1.0});
 
     super(p);
     this.parentPendulum;
@@ -125,14 +132,19 @@ class ChildPendulum extends PendulumSystem {
 }
 
 
-let parentPendulum;
-let childPendulum;
 
 function setup() {
+  pixelDensity(1);
   
   createCanvas(windowWidth, windowHeight);
-  parentPendulum = new ParentPendulum(width / 2, height / 4, 175);
-  childPendulum = new ChildPendulum(500);
+  // createCanvas(600, 400);
+
+  buffer = createGraphics(width, height);
+  buffer.background(0);
+  // buffer.translate(cx, cy);
+
+  parentPendulum = new ParentPendulum(width / 2, height / 3 - 50, height / 4 * 2);
+  childPendulum = new ChildPendulum((height / 10) * 2);
   
   childPendulum.parentPendulum = parentPendulum.p;
   parentPendulum.childPendulum = childPendulum.p;
@@ -141,6 +153,8 @@ function setup() {
 
 function draw() {
   background(0,0,0, 8);
+  // background(0);
+  image(buffer, 0, 0, width, height);
   parentPendulum.childPendulum = childPendulum.p;
   parentPendulum.update();
   parentPendulum.display(false);
@@ -149,6 +163,17 @@ function draw() {
 
   childPendulum.update();
   childPendulum.display(true);
+
+  if(frameCount > 1) {
+    buffer.strokeWeight(5);
+    buffer.stroke('rgba(0,255,0,0.25)');
+    // buffer.stroke("#8ac4d0");
+
+    buffer.line(px, py, childPendulum.p.position.x, childPendulum.p.position.y);
+  }
+
+  px = childPendulum.p.position.x;
+  py = childPendulum.p.position.y;
 }
 
 function mousePressed() {
