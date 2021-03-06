@@ -1,4 +1,4 @@
-# DoublePendulum
+# DoublePendulum（二重振り子）
 
 ## 参考
 
